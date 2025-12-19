@@ -1,5 +1,5 @@
-// GNews API Key
-const apikey = "2f8dbf4d5d4ef65d07c819e98d9cf370";
+// NewsAPI Key
+const apikey = "d56f37fbbc664ecab5995e18aef98ea2";
 
 // DOM Elements
 const blogcontainer = document.getElementById("blog-container");
@@ -10,17 +10,19 @@ const searchButton = document.getElementById("search_button");
 
 async function fetchingRandomNews() {
     try {
-        const api_url = `https://gnews.io/api/v4/top-headlines?token=${apikey}&country=in&lang=en&sortby=publishedAt`;
-        const responses = await fetch(api_url);
+        const targetURL = `https://newsapi.org/v2/top-headlines?country=in&apiKey=${apikey}`;
+        const api_url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
 
-        if (!responses.ok) {
-            throw new Error(`HTTP error! Status: ${responses.status}`);
+        const response = await fetch(api_url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
         }
 
-        const data = await responses.json();
+        const data = await response.json();
         return data.articles || [];
     } catch (error) {
-        console.error("Error occurred while fetching random news:", error);
+        console.error("Error fetching top headlines:", error);
         return [];
     }
 }
@@ -29,20 +31,24 @@ async function fetchingRandomNews() {
 
 async function fetchNewsQuery(query) {
     try {
-        const api_url = `https://gnews.io/api/v4/search?q=${query}&token=${apikey}&country=in&lang=en`;
-        const responses = await fetch(api_url);
+        const targetURL = `https://newsapi.org/v2/everything?q=${query}&sortBy=publishedAt&apiKey=${apikey}`;
+        const api_url = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetURL)}`;
 
-        if (!responses.ok) {
-            throw new Error(`HTTP error! Status: ${responses.status}`);
+        const response = await fetch(api_url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
         }
 
-        const data = await responses.json();
+        const data = await response.json();
         return data.articles || [];
     } catch (error) {
-        console.error("Error in fetching the query:", error);
+        console.error("Error fetching search results:", error);
         return [];
     }
 }
+
+/* ---------------- SEARCH BUTTON ---------------- */
 
 searchButton.addEventListener("click", async () => {
     const query = searchField.value.trim();
@@ -58,22 +64,22 @@ function displayBlog(articles) {
     blogcontainer.innerHTML = "";
 
     if (!articles || articles.length === 0) {
-        blogcontainer.innerHTML = "<p>No news available</p>";
+        blogcontainer.innerHTML = "<p>No news found</p>";
         return;
     }
 
-    articles.forEach((article) => {
+    articles.forEach(article => {
         const blogcard = document.createElement("div");
         blogcard.classList.add("blog-card");
 
         const img = document.createElement("img");
-        img.src = article.image || "fallback-image.jpg";
+        img.src = article.urlToImage || "fallback-image.jpg";
         img.alt = article.title || "News Image";
 
         const title = document.createElement("h2");
         title.textContent =
-            article.title && article.title.length > 30
-                ? article.title.slice(0, 30) + "..."
+            article.title && article.title.length > 40
+                ? article.title.slice(0, 40) + "..."
                 : article.title;
 
         const description = document.createElement("p");
